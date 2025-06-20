@@ -26,16 +26,23 @@ const MCPToolsDropdown: React.FC<MCPToolsDropdownProps> = ({
     selectedTools,
     onToolsChange
 }) => {
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
     const [isOpen, setIsOpen] = useState(false);
     const [tools, setTools] = useState<MCPTool[]>([]);
     const [loading, setLoading] = useState(true);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND;
 
-    // Fetch tools using the same logic as dashboard
+    // Only fetch tools if user is authenticated
     useEffect(() => {
         async function fetchTools() {
+            // Don't fetch if user is not authenticated
+            if (status === 'loading') return;
+            if (!session?.user?.id) {
+                setLoading(false);
+                return;
+            }
+
             try {
                 const res = await fetch('/api/userTools');
                 if (!res.ok) throw new Error('Failed to fetch tools');
@@ -60,9 +67,12 @@ const MCPToolsDropdown: React.FC<MCPToolsDropdownProps> = ({
             }
         }
         fetchTools();
-    }, []);
+    }, [session, status]);
 
     const handleToolToggle = (toolId: string) => {
+        // Only allow if user is logged in
+        if (!session?.user?.id) return;
+        
         const tool = tools.find(t => t.id === toolId);
         // Only allow selection if tool is connected (authorized or doesn't require auth)
         if (!tool?.connected) return;
@@ -74,7 +84,7 @@ const MCPToolsDropdown: React.FC<MCPToolsDropdownProps> = ({
     };
 
     const handleAuthorize = (toolId: string) => {
-        if (!session?.user.id) return;
+        if (!session?.user?.id) return;
         const userId = session.user.id;
         const oauthUrl = `${backendUrl}/api/auth/tokens?userId=${userId}&toolId=${toolId}`;
         window.location.href = '/dashboard';
@@ -83,6 +93,8 @@ const MCPToolsDropdown: React.FC<MCPToolsDropdownProps> = ({
     const handleGoToDashboard = () => {
         window.location.href = '/dashboard';
     };
+
+
 
     const getStatusIcon = (status: MCPTool['status']) => {
         switch (status) {
@@ -111,6 +123,26 @@ const MCPToolsDropdown: React.FC<MCPToolsDropdownProps> = ({
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [isOpen]);
+
+    // Show loading state while checking authentication
+    if (status === 'loading') {
+        return (
+            <div className="relative inline-block text-left">
+                <button
+                    disabled
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg shadow-sm opacity-50 cursor-not-allowed"
+                >
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
+                    <span className="text-sm font-medium text-gray-500">Loading...</span>
+                </button>
+            </div>
+        );
+    }
+
+    // Don't render the component if user is not authenticated
+    if (!session?.user?.id) {
+        return null;
+    }
 
     const connectedTools = tools.filter(tool => tool.connected);
     const availableTools = tools.filter(tool => tool.authRequired && !tool.authorized);
@@ -145,7 +177,7 @@ const MCPToolsDropdown: React.FC<MCPToolsDropdownProps> = ({
                                             <h3 className="text-sm font-semibold text-gray-900 flex items-center">
                                                 <Shield className="w-4 h-4 mr-1 text-green-600" />
                                                 Connected Tools
-                                                <a href="/tools" className="text-xs ml-5 font-medium text-blue-600 hover:underline hover:text-blue-800 transition">
+                                                <a href="/marketplace" className="text-xs ml-5 font-medium text-blue-600 hover:underline hover:text-blue-800 transition">
                                                 + Add Tools
                                                 </a>
                                             </h3>
@@ -156,12 +188,12 @@ const MCPToolsDropdown: React.FC<MCPToolsDropdownProps> = ({
                                                     key={tool.id}
                                                     className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
                                                 >
-                                                    <input
+                                                    {/* <input
                                                         type="checkbox"
                                                         checked={selectedTools.includes(tool.id)}
                                                         onChange={() => handleToolToggle(tool.id)}
                                                         className="accent-blue-600"
-                                                    />
+                                                    /> */}
                                                     <div className="flex items-center gap-2 flex-1">
                                                         {getStatusIcon(tool.status)}
                                                         <div className="flex flex-col">
@@ -195,11 +227,11 @@ const MCPToolsDropdown: React.FC<MCPToolsDropdownProps> = ({
                                                     key={tool.id}
                                                     className="flex items-center gap-3 p-2 rounded-lg bg-gray-50 opacity-75"
                                                 >
-                                                    <input
+                                                    {/* <input
                                                         type="checkbox"
                                                         disabled
                                                         className="accent-blue-600 opacity-50"
-                                                    />
+                                                    /> */}
                                                     <div className="flex items-center gap-2 flex-1">
                                                         {getStatusIcon(tool.status)}
                                                         <div className="flex flex-col">

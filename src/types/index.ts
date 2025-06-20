@@ -6,7 +6,7 @@ export interface LLMProvider {
     api_key:string;
 }
 
-export interface MCPTool {
+export interface Tool {
     id: string;
     name: string;
     description: string;
