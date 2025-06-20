@@ -164,7 +164,7 @@ const ChatInterface: React.FC = () => {
                   <span className="h-10 w-10 text-white text-4xl">7c</span>
                 </div>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Hello there!</h2>
-                <p className="text-xl text-gray-600">What's on your mind?</p>
+                <p className="text-xl text-gray-600">What&quots on your mind?</p>
               </div>
 
               {/* Suggested Prompts */}

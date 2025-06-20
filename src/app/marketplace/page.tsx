@@ -181,7 +181,7 @@ export default function Marketplace() {
             {searchQuery && (
               <div className="bg-blue-100 rounded-full px-3 sm:px-4 py-2 shadow-lg max-w-xs sm:max-w-none">
                 <span className="text-xs sm:text-sm font-medium text-blue-800 truncate">
-                  Searching: "{searchQuery.length > 20 ? searchQuery.substring(0, 20) + '...' : searchQuery}"
+                  Searching:&quot{searchQuery.length > 20 ? searchQuery.substring(0, 20) + '...' : searchQuery}&quot
                 </span>
               </div>
             )}
