@@ -65,6 +65,80 @@ function mapMessagesToOpenAI(messages: any[]) {
   }));
 }
 
+// Save conversation to backend
+// Save conversation to backend
+async function saveConversation(conversationId: string | null, userId: string, allMessages: any[], selectedLLM: string, newMessagesToSave: any[], toolResults: any[] = []) {
+  try {
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3333';
+    
+    if (!conversationId) {
+      // Create new conversation - save all messages
+      const title = generateConversationTitle(allMessages[0]?.content || 'New Conversation');
+      
+      const response = await fetch(`${backendUrl}/api/conversations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          title,
+          lastLLM: selectedLLM,
+          messages: allMessages.map(msg => ({
+            role: msg.role,
+            content: msg.content,
+            llmProvider: msg.role === 'assistant' ? selectedLLM : null,
+            toolResults: msg.role === 'assistant' && toolResults.length > 0 ? toolResults : null,
+          })),
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.id;
+      }
+    } else {
+      // Update existing conversation - save only new messages
+      for (const message of newMessagesToSave) {
+        await fetch(`${backendUrl}/api/conversations/${conversationId}/messages`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            role: message.role,
+            content: message.content,
+            llmProvider: message.role === 'assistant' ? selectedLLM : null,
+            toolResults: message.role === 'assistant' && toolResults.length > 0 ? toolResults : null,
+          }),
+        });
+      }
+
+      // Update lastLLM
+      await fetch(`${backendUrl}/api/conversations/${conversationId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          lastLLM: selectedLLM,
+        }),
+      });
+
+      return conversationId;
+    }
+  } catch (error) {
+    console.error('Error saving conversation:', error);
+    return null;
+  }
+}
+
+// Generate conversation title from first message
+function generateConversationTitle(content: string): string {
+  const words = content.split(' ').slice(0, 6);
+  return words.join(' ') + (content.split(' ').length > 6 ? '...' : '');
+}
+
 // Gemini chat handler
 async function handleGeminiChat(messages: any[], mcpTools: any[], mcpClient: any) {
   const geminiFormattedTools = mapToolsToGeminiFormat(mcpTools);
@@ -236,11 +310,18 @@ async function handleOpenAIChat(messages: any[], mcpTools: any[], mcpClient: any
 
 export async function POST(request: NextRequest) {
   try {
-    const { messages, selectedLLM = 'gemini' } = await request.json();
+    const { messages, selectedLLM = 'gemini', conversationId, userId } = await request.json();
     
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json(
         { error: 'Messages array is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'User ID is required' },
         { status: 400 }
       );
     }
@@ -284,7 +365,26 @@ export async function POST(request: NextRequest) {
         break;
     }
 
-    return NextResponse.json(result);
+    // Prepare messages to save - for new conversations, save all; for existing, save only new ones
+    const allMessages = [...messages, ...result.messages];
+    const messagesToSave = conversationId ? 
+      [messages[messages.length - 1], ...result.messages] : // For existing: user message + assistant responses
+      allMessages; // For new: all messages
+
+    // Save conversation
+    const savedConversationId = await saveConversation(
+      conversationId, 
+      userId, 
+      allMessages, // All messages for context
+      selectedLLM, 
+      messagesToSave, // Only new messages to save
+      result.toolResults
+    );
+
+    return NextResponse.json({
+      ...result,
+      conversationId: savedConversationId
+    });
 
   } catch (error: any) {
     console.error('Chat API error:', error);

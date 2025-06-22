@@ -155,7 +155,7 @@ const MCPToolsDropdown: React.FC<MCPToolsDropdownProps> = ({
             >
                 <Zap className="w-4 h-4 text-gray-700" />
                 <span className="text-sm font-medium text-gray-800">
-                    MCP Tools {selectedTools.length > 0 && `(${selectedTools.length})`}
+                    Tools {selectedTools.length > 0 && `(${selectedTools.length})`}
                 </span>
                 <ChevronDown className={`w-4 h-4 transition-transform text-gray-500 ${isOpen ? 'rotate-180' : ''}`} />
             </button>
