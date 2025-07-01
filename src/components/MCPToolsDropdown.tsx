@@ -93,6 +93,10 @@ const MCPToolsDropdown: React.FC<MCPToolsDropdownProps> = ({
     const handleGoToDashboard = () => {
         window.location.href = '/dashboard';
     };
+    
+    const handleGoToStore = () => {
+        window.location.href = '/marketplace';
+    };
 
 
 
@@ -146,6 +150,7 @@ const MCPToolsDropdown: React.FC<MCPToolsDropdownProps> = ({
 
     const connectedTools = tools.filter(tool => tool.connected);
     const availableTools = tools.filter(tool => tool.authRequired && !tool.authorized);
+
 
     return (
         <div ref={dropdownRef} className="relative inline-block text-left">
@@ -257,10 +262,10 @@ const MCPToolsDropdown: React.FC<MCPToolsDropdownProps> = ({
                                     <div className="text-center py-4">
                                         <p className="text-sm text-gray-500 mb-2">No MCP tools found</p>
                                         <button
-                                            onClick={handleGoToDashboard}
+                                            onClick={handleGoToStore}
                                             className="text-xs font-medium text-blue-600 hover:underline"
                                         >
-                                            Go to Dashboard
+                                            Go to Store
                                         </button>
                                     </div>
                                 ) : (

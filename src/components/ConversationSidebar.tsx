@@ -29,11 +29,12 @@ const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
   const [editTitle, setEditTitle] = useState('');
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND;
 
   // Fetch conversations
   const fetchConversations = async () => {
     try {
-      const response = await fetch(`http://localhost:3333/api/conversations?userId=${userId}`);
+      const response = await fetch(`${backendUrl}/api/conversations?userId=${userId}`);
       if (response.ok) {
         const data = await response.json();
         setConversations(data);
@@ -57,7 +58,7 @@ const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
     if (!confirm('Delete this conversation? This action cannot be undone.')) return;
 
     try {
-      const response = await fetch(`http://localhost:3333/api/conversations/${conversationId}`, {
+      const response = await fetch(`${backendUrl}/api/conversations/${conversationId}`, {
         method: 'DELETE',
       });
       if (response.ok) {
@@ -83,7 +84,7 @@ const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
     if (!editTitle.trim()) return;
 
     try {
-      const response = await fetch(`http://localhost:3333/api/conversations/${conversationId}`, {
+      const response = await fetch(`${backendUrl}/api/conversations/${conversationId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

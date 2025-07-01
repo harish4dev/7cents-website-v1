@@ -12,12 +12,14 @@
     "@anthropic-ai/sdk": "^0.54.0",
     "@google/generative-ai": "^0.24.1",
     "axios": "^1.10.0",
+    "clsx": "^2.1.1",
     "lucide-react": "^0.517.0",
     "next": "15.3.3",
     "next-auth": "^4.24.11",
     "openai": "^5.5.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "tailwind-merge": "^3.3.1",
     "zustand": "^5.0.5"
   },
   "devDependencies": {

@@ -147,6 +147,10 @@ const DashboardPage: React.FC = () => {
     window.location.href = oauthUrl;
   };
 
+  const handleStartUsing = ()=>{
+    window.location.href ='/'
+  }
+
   const cursorConfig = JSON.stringify({
     mcpServers: {
       "7cents_cutom_mcp_server": {
@@ -208,6 +212,7 @@ const DashboardPage: React.FC = () => {
               <h1 className="text-2xl font-bold text-gray-900">MCP Tools Dashboard</h1>
               <p className="text-gray-600 mt-1">Manage your connected tools and configurations</p>
             </div>
+            <div><button onClick={handleStartUsing} className=' cursor-pointer bg-gradient-to-br from-blue-500 to-purple-600  rounded-md p-3 text-white'>start using</button></div>
             <div className="flex items-center space-x-3">
               <div className="text-right">
                 <p className="text-sm font-medium text-gray-900">{session?.user.name}</p>
